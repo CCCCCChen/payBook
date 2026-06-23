@@ -1,0 +1,5 @@
+node_modules
+.paybook
+backend/app/__pycache__
+.env
+backend/app/routers/__pycache__

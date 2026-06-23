@@ -1,0 +1,44 @@
+@use '@/styles/variables.scss' as *;
+
+.cell {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+  box-sizing: border-box;
+}
+
+.cell:last-child {
+  border-bottom: 0;
+}
+
+.left {
+  min-width: 0;
+}
+
+.title {
+  color: $color-text-primary;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis;
+}
+
+.desc {
+  margin-top: $spacing-xs;
+  color: $color-text-tertiary;
+  font-size: $font-size-sm;
+  @include text-ellipsis;
+}
+
+.right {
+  margin-left: $spacing-md;
+  flex-shrink: 0;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+}
+
+.tap:active {
+  opacity: 0.86;
+}

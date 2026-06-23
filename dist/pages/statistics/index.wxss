@@ -1,0 +1,114 @@
+/*!*************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[2]!./node_modules/resolve-url-loader/index.js!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[0].use[4]!./src/pages/statistics/index.module.scss ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+.index-module__container___BirlZ {
+  min-height: 100vh;
+  padding: 48rpx 32rpx 48rpx;
+  background: -webkit-gradient(linear, left top, left bottom, from(#f0f5ff), to(#f2f6ff));
+  background: -webkit-linear-gradient(top, #f0f5ff 0%, #f2f6ff 100%);
+  background: linear-gradient(180deg, #f0f5ff 0%, #f2f6ff 100%);
+}
+
+.index-module__sectionTitle___b9r4D {
+  font-size: 24rpx;
+  color: #4e5969;
+  margin-bottom: 16rpx;
+}
+
+.index-module__section___qF1xh {
+  margin-top: 32rpx;
+}
+
+.index-module__row___GWz6f {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 24rpx;
+}
+
+.index-module__half___W2HXc {
+  -webkit-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+}
+
+.index-module__metricLabel___UIPiP {
+  font-size: 22rpx;
+  color: #86909c;
+}
+
+.index-module__metricValueIncome___C7t5r {
+  margin-top: 8rpx;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #00b42a;
+}
+
+.index-module__metricValueExpense___nD3NK {
+  margin-top: 8rpx;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #f53f3f;
+}
+
+.index-module__metricValueBalance___rrPKH {
+  margin-top: 8rpx;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.index-module__barItem___Q4LyW {
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f2f3f5;
+}
+
+.index-module__barItem___Q4LyW:last-child {
+  border-bottom: 0;
+}
+
+.index-module__barTop___DF_rH {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-justify-content: space-between;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-align-items: baseline;
+      -ms-flex-align: baseline;
+          align-items: baseline;
+  gap: 24rpx;
+}
+
+.index-module__barName___aZC4S {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #1d2129;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.index-module__barAmount___Mrodq {
+  -webkit-flex-shrink: 0;
+      -ms-flex-negative: 0;
+          flex-shrink: 0;
+  font-size: 24rpx;
+  color: #4e5969;
+}
+
+.index-module__barTrack___GsFUc {
+  margin-top: 8rpx;
+  width: 100%;
+  height: 16rpx;
+  border-radius: 999rpx;
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.index-module__barFill___lUl_O {
+  height: 100%;
+  border-radius: 999rpx;
+  -webkit-transition: width 0.25s ease;
+  transition: width 0.25s ease;
+}

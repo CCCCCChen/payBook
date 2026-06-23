@@ -1,0 +1,96 @@
+@use '@/styles/variables.scss' as *;
+
+.container {
+  min-height: 100vh;
+  padding: $spacing-xl $page-padding $spacing-xl;
+  background: linear-gradient(180deg, #f0f5ff 0%, $color-bg-page 100%);
+}
+
+.sectionTitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.section {
+  margin-top: $spacing-lg;
+}
+
+.row {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.half {
+  flex: 1;
+}
+
+.metricLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.metricValueIncome {
+  margin-top: $spacing-xs;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-success;
+}
+
+.metricValueExpense {
+  margin-top: $spacing-xs;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-error;
+}
+
+.metricValueBalance {
+  margin-top: $spacing-xs;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.barItem {
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.barItem:last-child {
+  border-bottom: 0;
+}
+
+.barTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: $spacing-md;
+}
+
+.barName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.barAmount {
+  flex-shrink: 0;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.barTrack {
+  margin-top: $spacing-xs;
+  width: 100%;
+  height: 16rpx;
+  border-radius: 999rpx;
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 999rpx;
+  transition: width $transition-base;
+}
