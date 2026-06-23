@@ -20,7 +20,7 @@ export function getTransactionTitle(
   categoryMap: Map<number, Category>
 ) {
   const category = tx.category_id ? categoryMap.get(tx.category_id) : null
-  return tx.note?.trim() || category?.name || typeLabelMap[tx.type] || tx.type
+  return tx.note?.trim() || category?.name || typeLabelMap[tx.entry_type] || tx.entry_type
 }
 
 export function getTransactionDesc(
@@ -30,9 +30,8 @@ export function getTransactionDesc(
 ) {
   const account = accountMap.get(tx.account_id)
   const category = tx.category_id ? categoryMap.get(tx.category_id) : null
-  const parts = [tx.date]
+  const parts = [tx.transaction_date]
   if (category?.name) parts.push(category.name)
   if (account?.name) parts.push(account.name)
   return parts.join(' · ')
 }
-

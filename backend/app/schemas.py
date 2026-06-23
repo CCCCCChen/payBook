@@ -15,17 +15,46 @@ class TokenOut(BaseModel):
     token_type: str = "bearer"
 
 
+class MeOut(BaseOut):
+    id: int
+    openid: str | None
+    username: str | None
+    created_at: datetime
+
+
+class RegisterIn(BaseModel):
+    username: str
+    password: str = Field(min_length=6, max_length=128)
+
+
+class PasswordLoginIn(BaseModel):
+    username: str
+    password: str
+
+
+class WechatLoginIn(BaseModel):
+    code: str
+
+
 class AccountCreate(BaseModel):
     name: str
-    type: str = "other"
+    type: str
+    subtype: str | None = None
     initial_balance: float = 0
+    credit_limit: float | None = None
+    bill_date: int | None = None
+    due_date: int | None = None
     sort_order: int = 0
 
 
 class AccountUpdate(BaseModel):
     name: str | None = None
     type: str | None = None
+    subtype: str | None = None
     initial_balance: float | None = None
+    credit_limit: float | None = None
+    bill_date: int | None = None
+    due_date: int | None = None
     sort_order: int | None = None
     is_deleted: bool | None = None
 
@@ -34,7 +63,11 @@ class AccountOut(BaseOut):
     id: int
     name: str
     type: str
+    subtype: str | None
     initial_balance: float
+    credit_limit: float | None
+    bill_date: int | None
+    due_date: int | None
     sort_order: int
     is_deleted: bool
     created_at: datetime
@@ -43,16 +76,20 @@ class AccountOut(BaseOut):
 
 class CategoryCreate(BaseModel):
     name: str
-    type: str
+    nature: str
+    expense_tier: str | None = None
     icon: str | None = None
     color: str | None = None
+    is_stable_income: bool = False
     sort_order: int = 0
 
 
 class CategoryUpdate(BaseModel):
     name: str | None = None
+    expense_tier: str | None = None
     icon: str | None = None
     color: str | None = None
+    is_stable_income: bool | None = None
     sort_order: int | None = None
     is_deleted: bool | None = None
 
@@ -60,9 +97,11 @@ class CategoryUpdate(BaseModel):
 class CategoryOut(BaseOut):
     id: int
     name: str
-    type: str
+    nature: str
+    expense_tier: str | None
     icon: str | None
     color: str | None
+    is_stable_income: bool
     sort_order: int
     is_system: bool
     is_deleted: bool
@@ -71,37 +110,41 @@ class CategoryOut(BaseOut):
 
 
 class TransactionCreate(BaseModel):
-    type: str
+    entry_type: str
     amount: float = Field(gt=0)
     category_id: int | None = None
     account_id: int
     to_account_id: int | None = None
-    date: date
+    transaction_date: date
     note: str | None = None
     budget_id: int | None = None
+    is_cash_basis: bool = True
 
 
 class TransactionUpdate(BaseModel):
-    type: str | None = None
+    entry_type: str | None = None
     amount: float | None = None
     category_id: int | None = None
     account_id: int | None = None
     to_account_id: int | None = None
-    date: dt.date | None = None
+    transaction_date: dt.date | None = None
     note: str | None = None
     budget_id: int | None = None
+    is_cash_basis: bool | None = None
 
 
 class TransactionOut(BaseOut):
     id: int
-    type: str
+    entry_type: str
     amount: float
     category_id: int | None
     account_id: int
     to_account_id: int | None
-    date: date
+    transaction_date: date
     note: str | None
     budget_id: int | None
+    liability_id: int | None
+    is_cash_basis: bool
     created_at: datetime
     updated_at: datetime
 
@@ -110,7 +153,7 @@ class TransferCreate(BaseModel):
     from_account_id: int
     to_account_id: int
     amount: float = Field(gt=0)
-    date: date
+    transaction_date: date
     note: str | None = None
 
 
@@ -120,7 +163,7 @@ class BudgetCreate(BaseModel):
     start_date: date | None = None
     end_date: date | None = None
     amount: float = Field(gt=0)
-    category_scope: list[int] = Field(default_factory=list)
+    category_ids: list[int] = Field(default_factory=list)
     is_active: bool = True
 
 
@@ -130,7 +173,7 @@ class BudgetUpdate(BaseModel):
     start_date: date | None = None
     end_date: date | None = None
     amount: float | None = None
-    category_scope: list[int] | None = None
+    category_ids: list[int] | None = None
     is_active: bool | None = None
 
 
@@ -141,7 +184,7 @@ class BudgetOut(BaseOut):
     start_date: date | None
     end_date: date | None
     amount: float
-    category_scope: list[int]
+    category_ids: list[int]
     is_active: bool
     period_start: date | None = None
     period_end: date | None = None
@@ -152,67 +195,13 @@ class BudgetOut(BaseOut):
     created_at: datetime
     updated_at: datetime
 
-
-class RecurringTemplateCreate(BaseModel):
-    name: str
-    type: str
-    amount: float = Field(gt=0)
-    category_id: int | None = None
-    account_id: int
-    cycle_type: str
-    cycle_day: int
-    next_due_date: date
-    is_active: bool = True
-    note: str | None = None
-
-
-class RecurringTemplateUpdate(BaseModel):
-    name: str | None = None
-    type: str | None = None
-    amount: float | None = None
-    category_id: int | None = None
-    account_id: int | None = None
-    cycle_type: str | None = None
-    cycle_day: int | None = None
-    next_due_date: date | None = None
-    is_active: bool | None = None
-    note: str | None = None
-
-
-class RecurringTemplateOut(BaseOut):
+class LiabilityRecordOut(BaseOut):
     id: int
-    name: str
-    type: str
-    amount: float
-    category_id: int | None
     account_id: int
-    cycle_type: str
-    cycle_day: int
-    next_due_date: date
-    is_active: bool
-    note: str | None
-    created_at: datetime
-    updated_at: datetime
-
-
-class PendingTransactionOut(BaseOut):
-    id: int
-    template_id: int | None
-    type: str
+    transaction_id: int
     amount: float
-    category_id: int | None
-    account_id: int
-    date: date
     due_date: date
-    note: str | None
+    bill_date: date
     status: str
+    paid_transaction_id: int | None
     created_at: datetime
-    updated_at: datetime
-
-
-class PendingConfirmIn(BaseModel):
-    amount: float | None = None
-    category_id: int | None = None
-    account_id: int | None = None
-    date: dt.date | None = None
-    note: str | None = None

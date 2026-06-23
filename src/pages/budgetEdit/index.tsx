@@ -26,7 +26,7 @@ function BudgetEditPage() {
   const [scopeMode, setScopeMode] = useState<'all' | 'custom'>('all')
   const [scopeIds, setScopeIds] = useState<number[]>([])
 
-  const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories])
+  const expenseCategories = useMemo(() => categories.filter((c) => c.nature === 'expense'), [categories])
 
   const loadBase = async () => {
     try {
@@ -49,9 +49,9 @@ function BudgetEditPage() {
       setStartDate(b.start_date || startDate)
       setEndDate(b.end_date || endDate)
       setIsActive(b.is_active)
-      if (b.category_scope && b.category_scope.length > 0) {
+      if (b.category_ids && b.category_ids.length > 0) {
         setScopeMode('custom')
-        setScopeIds(b.category_scope)
+        setScopeIds(b.category_ids)
       } else {
         setScopeMode('all')
         setScopeIds([])
@@ -111,7 +111,7 @@ function BudgetEditPage() {
         start_date: cycleType === 'custom' ? startDate : null,
         end_date: cycleType === 'custom' ? endDate : null,
         amount: amt,
-        category_scope: scopeMode === 'custom' ? scopeIds : [],
+        category_ids: scopeMode === 'custom' ? scopeIds : [],
         is_active: isActive
       }
 

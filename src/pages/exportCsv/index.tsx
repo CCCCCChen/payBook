@@ -22,9 +22,9 @@ function ExportCsvPage() {
     try {
       const tempFilePath = await downloadCsv(start, end)
       const saved = await Taro.saveFile({ tempFilePath })
-      const filePath = saved.savedFilePath || tempFilePath
+      const filePath = (saved as unknown as { savedFilePath?: string }).savedFilePath || tempFilePath
       try {
-        await Taro.openDocument({ filePath, fileType: 'csv' })
+        await Taro.openDocument({ filePath, fileType: 'csv' as never })
       } catch (e) {
         console.error('[Export] openDocument failed', e)
         Taro.showToast({ title: '已导出（文件已保存）', icon: 'success' })

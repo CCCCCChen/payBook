@@ -3,12 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
 from ..db import get_db
-from ..models import Category, PendingTransaction, RecurringTemplate, Transaction, User
+from ..models import Category, Transaction, User
 from ..schemas import CategoryCreate, CategoryOut, CategoryUpdate
 
 
@@ -33,9 +33,11 @@ def create_category(
     cat = Category(
         user_id=user.id,
         name=payload.name,
-        type=payload.type,
+        nature=payload.nature,
+        expense_tier=payload.expense_tier,
         icon=payload.icon,
         color=payload.color,
+        is_stable_income=payload.is_stable_income,
         sort_order=payload.sort_order,
         is_system=False,
         is_deleted=False,
@@ -87,18 +89,6 @@ def delete_category(
     has_refs = (
         db.scalars(
             select(Transaction.id).where(Transaction.user_id == user.id, Transaction.category_id == category_id).limit(1)
-        ).first()
-        is not None
-        or db.scalars(
-            select(RecurringTemplate.id).where(
-                RecurringTemplate.user_id == user.id, RecurringTemplate.category_id == category_id
-            ).limit(1)
-        ).first()
-        is not None
-        or db.scalars(
-            select(PendingTransaction.id).where(
-                PendingTransaction.user_id == user.id, PendingTransaction.category_id == category_id
-            ).limit(1)
         ).first()
         is not None
     )

@@ -35,7 +35,16 @@ copy .env.example .env
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-接口前缀：`http://localhost:8000/api/v1`
+接口前缀：`http://localhost:8000/api/v2`
 
-OpenAPI：`http://localhost:8000/api/v1/openapi.json`
+OpenAPI：`http://localhost:8000/api/v2/openapi.json`
 
+## 5. v2.1 直切 v2：数据库重建
+
+v2.1 会重建后端领域模型与表结构，旧的 SQLite 文件无法兼容。
+
+重建方式（推荐）：
+
+- 停止后端进程
+- 删除 `backend/data/app.db`
+- 重新启动后端（启动时会自动 `create_all`）

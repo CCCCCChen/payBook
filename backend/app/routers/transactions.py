@@ -41,12 +41,12 @@ def list_transactions(
     where = [Transaction.user_id == user.id]
     if month:
         start, end = _month_range(month)
-        where.append(Transaction.date >= start)
-        where.append(Transaction.date < end)
+        where.append(Transaction.transaction_date >= start)
+        where.append(Transaction.transaction_date < end)
     if start_date:
-        where.append(Transaction.date >= start_date)
+        where.append(Transaction.transaction_date >= start_date)
     if end_date:
-        where.append(Transaction.date <= end_date)
+        where.append(Transaction.transaction_date <= end_date)
     if account_id:
         where.append(or_(Transaction.account_id == account_id, Transaction.to_account_id == account_id))
     if category_id:
@@ -56,7 +56,12 @@ def list_transactions(
     if keyword:
         where.append(Transaction.note.like(f"%{keyword}%"))
 
-    stmt = select(Transaction).where(and_(*where)).order_by(desc(Transaction.date), desc(Transaction.id)).limit(limit)
+    stmt = (
+        select(Transaction)
+        .where(and_(*where))
+        .order_by(desc(Transaction.transaction_date), desc(Transaction.id))
+        .limit(limit)
+    )
     return db.scalars(stmt).all()
 
 
@@ -68,14 +73,15 @@ def create_transaction(
 ):
     tx = Transaction(
         user_id=user.id,
-        type=payload.type,
+        entry_type=payload.entry_type,
         amount=payload.amount,
         category_id=payload.category_id,
         account_id=payload.account_id,
         to_account_id=payload.to_account_id,
-        date=payload.date,
+        transaction_date=payload.transaction_date,
         note=payload.note,
         budget_id=payload.budget_id,
+        is_cash_basis=payload.is_cash_basis,
         updated_at=datetime.utcnow(),
     )
     db.add(tx)
@@ -129,26 +135,28 @@ def transfer(
 
     out_tx = Transaction(
         user_id=user.id,
-        type="transfer_out",
+        entry_type="transfer_out",
         amount=payload.amount,
         category_id=None,
         account_id=payload.from_account_id,
         to_account_id=payload.to_account_id,
-        date=payload.date,
+        transaction_date=payload.transaction_date,
         note=payload.note,
         budget_id=None,
+        is_cash_basis=True,
         updated_at=datetime.utcnow(),
     )
     in_tx = Transaction(
         user_id=user.id,
-        type="transfer_in",
+        entry_type="transfer_in",
         amount=payload.amount,
         category_id=None,
         account_id=payload.to_account_id,
         to_account_id=payload.from_account_id,
-        date=payload.date,
+        transaction_date=payload.transaction_date,
         note=payload.note,
         budget_id=None,
+        is_cash_basis=True,
         updated_at=datetime.utcnow(),
     )
     db.add_all([out_tx, in_tx])

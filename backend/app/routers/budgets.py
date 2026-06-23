@@ -42,20 +42,20 @@ def _budget_period(b: Budget, today: date) -> tuple[date | None, date | None]:
 
 
 def _to_out(db: Session, b: Budget, today: date) -> dict:
-    category_scope = json.loads(b.category_scope or "[]")
+    category_ids = json.loads(b.category_ids or "[]")
     period_start, period_end = _budget_period(b, today)
 
     spent = 0.0
     if period_start and period_end:
         where = [
             Transaction.user_id == b.user_id,
-            Transaction.type == "expense",
+            Transaction.entry_type == "expense",
             Transaction.budget_id == b.id,
-            Transaction.date >= period_start,
-            Transaction.date <= period_end,
+            Transaction.transaction_date >= period_start,
+            Transaction.transaction_date <= period_end,
         ]
-        if category_scope:
-            where.append(Transaction.category_id.in_(category_scope))
+        if category_ids:
+            where.append(Transaction.category_id.in_(category_ids))
         spent_val = db.scalar(select(func.coalesce(func.sum(Transaction.amount), 0)).where(and_(*where)))
         spent = float(spent_val or 0)
 
@@ -71,7 +71,7 @@ def _to_out(db: Session, b: Budget, today: date) -> dict:
         "start_date": b.start_date,
         "end_date": b.end_date,
         "amount": float(b.amount),
-        "category_scope": category_scope,
+        "category_ids": category_ids,
         "is_active": bool(b.is_active),
         "period_start": period_start,
         "period_end": period_end,
@@ -100,7 +100,7 @@ def create_budget(payload: BudgetCreate, user: User = Depends(get_current_user),
         start_date=payload.start_date,
         end_date=payload.end_date,
         amount=payload.amount,
-        category_scope=json.dumps(payload.category_scope, ensure_ascii=False),
+        category_ids=json.dumps(payload.category_ids, ensure_ascii=False),
         is_active=payload.is_active,
         updated_at=datetime.utcnow(),
     )
@@ -119,8 +119,8 @@ def update_budget(
         raise HTTPException(status_code=404, detail="budget_not_found")
 
     data = payload.model_dump(exclude_unset=True)
-    if "category_scope" in data and data["category_scope"] is not None:
-        data["category_scope"] = json.dumps(data["category_scope"], ensure_ascii=False)
+    if "category_ids" in data and data["category_ids"] is not None:
+        data["category_ids"] = json.dumps(data["category_ids"], ensure_ascii=False)
 
     for k, v in data.items():
         setattr(b, k, v)

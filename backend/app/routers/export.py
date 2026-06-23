@@ -26,23 +26,25 @@ def export_csv(
 ):
     txs = db.scalars(
         select(Transaction)
-        .where(and_(Transaction.user_id == user.id, Transaction.date >= start, Transaction.date <= end))
-        .order_by(desc(Transaction.date), desc(Transaction.id))
+        .where(and_(Transaction.user_id == user.id, Transaction.transaction_date >= start, Transaction.transaction_date <= end))
+        .order_by(desc(Transaction.transaction_date), desc(Transaction.id))
     ).all()
 
     buf = io.StringIO()
     writer = csv.writer(buf)
-    writer.writerow(["id", "type", "amount", "category_id", "account_id", "to_account_id", "date", "note", "budget_id"])
+    writer.writerow(
+        ["id", "entry_type", "amount", "category_id", "account_id", "to_account_id", "transaction_date", "note", "budget_id"]
+    )
     for t in txs:
         writer.writerow(
             [
                 t.id,
-                t.type,
+                t.entry_type,
                 float(t.amount),
                 t.category_id or "",
                 t.account_id,
                 t.to_account_id or "",
-                t.date.isoformat(),
+                t.transaction_date.isoformat(),
                 (t.note or "").replace("\n", " ").strip(),
                 t.budget_id or "",
             ]

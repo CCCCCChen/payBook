@@ -24,10 +24,6 @@ function MinePage() {
     Taro.showToast({ title: '已保存', icon: 'success' })
   }
 
-  const goRecurring = () => {
-    Taro.navigateTo({ url: '/pages/recurringTemplates/index' })
-  }
-
   const goExport = () => {
     Taro.navigateTo({ url: '/pages/exportCsv/index' })
   }
@@ -41,6 +37,10 @@ function MinePage() {
   }
 
   const relogin = async () => {
+    if (process.env.TARO_ENV === 'h5') {
+      Taro.reLaunch({ url: '/pages/login/index' })
+      return
+    }
     try {
       const res = await loginWithWechatCode()
       setToken(res.access_token)
@@ -60,7 +60,6 @@ function MinePage() {
         <Card>
           <Cell title="账单列表" desc="搜索与筛选" onClick={goTransactions} />
           <Cell title="转账" desc="账户之间划转" onClick={goTransfer} />
-          <Cell title="周期性账单" desc="创建模板、生成待确认、确认入账" onClick={goRecurring} />
           <Cell title="导出 CSV" desc="按日期范围导出账单" onClick={goExport} />
         </Card>
       </View>
@@ -71,17 +70,18 @@ function MinePage() {
           className={styles.input}
           value={editingBaseUrl}
           onInput={(e) => setEditingBaseUrl(e.detail.value)}
-          placeholder="例如 https://api.example.com/api/v1"
+          placeholder="例如 https://api.example.com/api/v2"
         />
         <Text className={styles.tip}>
-          真机调试不能访问 localhost；只有本机微信开发者工具联调时才建议填 http://localhost:8000/api/v1。
+          H5 优先建议直接使用 `/api/v2` 后端；真机调试不能访问 localhost，仅本机开发联调时才建议填
+          `http://localhost:8000/api/v2`。
         </Text>
         <View className={styles.btnRow}>
           <View className={styles.half}>
             <PrimaryButton text="保存" size="sm" onClick={saveBaseUrl} />
           </View>
           <View className={styles.half}>
-            <PrimaryButton text="重新登录" size="sm" onClick={relogin} />
+            <PrimaryButton text={process.env.TARO_ENV === 'h5' ? '前往登录' : '重新登录'} size="sm" onClick={relogin} />
           </View>
         </View>
       </View>
@@ -89,6 +89,7 @@ function MinePage() {
       <View className={styles.section}>
         <Text className={styles.sectionTitle}>登录状态</Text>
         <Card>
+          <Cell title="登录方式" desc={process.env.TARO_ENV === 'h5' ? 'H5 账号密码' : '微信小程序登录'} />
           <Cell title="Token" desc={shortToken} />
         </Card>
         <View className={styles.btnRow}>

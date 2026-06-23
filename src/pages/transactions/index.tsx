@@ -156,7 +156,7 @@ function TransactionsPage() {
         <Card>
           {list.length === 0 && <Cell title="暂无结果" desc="换个条件试试" />}
           {list.map((t) => {
-            const sign = t.type === 'income' ? '+' : t.type === 'expense' ? '-' : ''
+            const sign = t.entry_type === 'income' ? '+' : t.entry_type === 'expense' ? '-' : ''
             return (
               <Cell
                 key={t.id}

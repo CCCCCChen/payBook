@@ -1,1 +1,1 @@
-from . import accounts, auth, budgets, categories, export, recurring, statistics, transactions
+from . import accounts, auth, budgets, categories, export, statistics, transactions

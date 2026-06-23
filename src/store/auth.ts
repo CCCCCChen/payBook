@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist, type PersistStorage } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import { taroStorage } from './storage'
 
 interface AuthState {
@@ -17,7 +17,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'paybook_auth',
-      storage: taroStorage as PersistStorage<AuthState>
+      storage: createJSONStorage(() => taroStorage)
     }
   )
 )

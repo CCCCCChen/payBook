@@ -5,23 +5,19 @@ from datetime import datetime
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..auth import create_access_token
+from ..auth import create_access_token, get_current_user
 from ..db import get_db
 from ..models import Account, User
+from ..schemas import MeOut, PasswordLoginIn, RegisterIn, TokenOut, WechatLoginIn
+from ..security import hash_password, verify_password
 from ..seed import ensure_system_categories
 from ..settings import settings
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-
-class LoginIn(BaseModel):
-    code: str | None = None
-    openid: str | None = None
 
 
 async def _code_to_openid(code: str) -> str:
@@ -57,25 +53,20 @@ def _ensure_default_accounts(db: Session, user_id: int) -> None:
 
     db.add_all(
         [
-            Account(user_id=user_id, name="支付宝", type="alipay", initial_balance=0, sort_order=1),
-            Account(user_id=user_id, name="信用卡", type="credit", initial_balance=0, sort_order=2),
-            Account(user_id=user_id, name="微信钱包", type="wechat", initial_balance=0, sort_order=3),
-            Account(user_id=user_id, name="银行卡", type="bank", initial_balance=0, sort_order=4),
-            Account(user_id=user_id, name="现金", type="cash", initial_balance=0, sort_order=5),
+            Account(user_id=user_id, name="支付宝", type="asset", subtype="alipay", initial_balance=0, sort_order=1),
+            Account(user_id=user_id, name="微信钱包", type="asset", subtype="wechat", initial_balance=0, sort_order=2),
+            Account(user_id=user_id, name="银行卡", type="asset", subtype="bank", initial_balance=0, sort_order=3),
+            Account(user_id=user_id, name="现金", type="asset", subtype="cash", initial_balance=0, sort_order=4),
+            Account(user_id=user_id, name="花呗", type="liability", subtype="huabei", initial_balance=0, sort_order=11),
+            Account(user_id=user_id, name="信用卡", type="liability", subtype="credit_card", initial_balance=0, sort_order=12),
         ]
     )
     db.commit()
 
 
-@router.post("/login")
-async def login(payload: LoginIn, db: Session = Depends(get_db)):
-    if payload.openid:
-        openid = payload.openid
-    elif payload.code:
-        openid = await _code_to_openid(payload.code)
-    else:
-        raise HTTPException(status_code=400, detail="code_or_openid_required")
-
+@router.post("/wechat-login", response_model=TokenOut)
+async def wechat_login(payload: WechatLoginIn, db: Session = Depends(get_db)):
+    openid = await _code_to_openid(payload.code)
     user = db.scalars(select(User).where(User.openid == openid)).first()
     if user is None:
         user = User(openid=openid, created_at=datetime.utcnow())
@@ -87,4 +78,38 @@ async def login(payload: LoginIn, db: Session = Depends(get_db)):
     _ensure_default_accounts(db, user.id)
 
     token = create_access_token(user.id)
-    return {"access_token": token, "token_type": "bearer"}
+    return TokenOut(access_token=token)
+
+
+@router.post("/register", response_model=TokenOut)
+def register(payload: RegisterIn, db: Session = Depends(get_db)):
+    existing = db.scalars(select(User).where(User.username == payload.username)).first()
+    if existing is not None:
+        raise HTTPException(status_code=400, detail="username_taken")
+
+    user = User(username=payload.username, password_hash=hash_password(payload.password), created_at=datetime.utcnow())
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    ensure_system_categories(db, user)
+    _ensure_default_accounts(db, user.id)
+
+    token = create_access_token(user.id)
+    return TokenOut(access_token=token)
+
+
+@router.post("/password-login", response_model=TokenOut)
+def password_login(payload: PasswordLoginIn, db: Session = Depends(get_db)):
+    user = db.scalars(select(User).where(User.username == payload.username)).first()
+    if user is None or not user.password_hash:
+        raise HTTPException(status_code=401, detail="invalid_credentials")
+    if not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="invalid_credentials")
+    token = create_access_token(user.id)
+    return TokenOut(access_token=token)
+
+
+@router.get("/me", response_model=MeOut)
+def me(user: User = Depends(get_current_user)):
+    return user

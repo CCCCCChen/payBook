@@ -51,7 +51,7 @@ function AddTransactionPage() {
     try {
       const [a, c, b] = await Promise.all([getAccounts(), getCategories(), getBudgets()])
       setAccounts(a)
-      const filtered = c.filter((it) => it.type === type)
+      const filtered = c.filter((it) => it.nature === type)
       setCategories(filtered)
       setBudgets(b.filter((it) => it.is_active))
       if (!accountId && a.length) setAccountId(a[0].id)
@@ -110,14 +110,15 @@ function AddTransactionPage() {
     setLoading(true)
     try {
       const payload: Omit<Transaction, 'id'> = {
-        type,
+        entry_type: type,
         amount: amt,
         category_id: categoryId,
         account_id: accountId,
         to_account_id: null,
-        date,
+        transaction_date: date,
         note: note.trim(),
-        budget_id: type === 'expense' ? budgetId : null
+        budget_id: type === 'expense' ? budgetId : null,
+        is_cash_basis: true
       }
       await createTransaction(payload)
       console.info('[AddTransaction] save payload', payload)

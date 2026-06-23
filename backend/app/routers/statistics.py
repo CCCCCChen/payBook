@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from ..auth import get_current_user
 from ..db import get_db
-from ..models import Account, Category, RecurringTemplate, Transaction, User
+from ..models import Account, AmortizationTemplate, Category, Transaction, User
 
 
 router = APIRouter(prefix="/statistics", tags=["statistics"])
@@ -34,45 +34,31 @@ def summary(
     income_sum = db.scalar(
         select(func.coalesce(func.sum(Transaction.amount), 0)).where(
             Transaction.user_id == user.id,
-            Transaction.type == "income",
-            Transaction.date >= start,
-            Transaction.date <= end,
+            Transaction.entry_type == "income",
+            Transaction.transaction_date >= start,
+            Transaction.transaction_date <= end,
         )
     )
     expense_sum = db.scalar(
         select(func.coalesce(func.sum(Transaction.amount), 0)).where(
             Transaction.user_id == user.id,
-            Transaction.type == "expense",
-            Transaction.date >= start,
-            Transaction.date <= end,
+            Transaction.entry_type == "expense",
+            Transaction.transaction_date >= start,
+            Transaction.transaction_date <= end,
         )
     )
     income = float(income_sum or 0)
     expense = float(expense_sum or 0)
 
-    fixed_monthly = float(
+    fixed_monthly_expense = float(
         db.scalar(
-            select(func.coalesce(func.sum(RecurringTemplate.amount), 0)).where(
-                RecurringTemplate.user_id == user.id,
-                RecurringTemplate.is_active.is_(True),
-                RecurringTemplate.type == "expense",
-                RecurringTemplate.cycle_type == "monthly",
+            select(func.coalesce(func.sum(AmortizationTemplate.monthly_amount), 0)).where(
+                AmortizationTemplate.user_id == user.id,
+                AmortizationTemplate.is_active.is_(True),
             )
         )
         or 0
     )
-    fixed_weekly = float(
-        db.scalar(
-            select(func.coalesce(func.sum(RecurringTemplate.amount), 0)).where(
-                RecurringTemplate.user_id == user.id,
-                RecurringTemplate.is_active.is_(True),
-                RecurringTemplate.type == "expense",
-                RecurringTemplate.cycle_type == "weekly",
-            )
-        )
-        or 0
-    )
-    fixed_monthly_expense = fixed_monthly + fixed_weekly * (52.0 / 12.0)
 
     return {
         "month": month,
@@ -97,9 +83,9 @@ def category_pie(
         )
         .where(
             Transaction.user_id == user.id,
-            Transaction.type == "expense",
-            Transaction.date >= start,
-            Transaction.date <= end,
+            Transaction.entry_type == "expense",
+            Transaction.transaction_date >= start,
+            Transaction.transaction_date <= end,
             Transaction.category_id.is_not(None),
         )
         .group_by(Transaction.category_id)
@@ -147,24 +133,24 @@ def trend(
     start = date(month_list[-1][0], month_list[-1][1], 1)
     end = today
 
-    month_expr = func.strftime("%Y-%m", Transaction.date)
+    month_expr = func.strftime("%Y-%m", Transaction.transaction_date)
     rows = db.execute(
         select(
             month_expr.label("month"),
             func.coalesce(
-                func.sum(case((Transaction.type == "income", Transaction.amount), else_=0)),
+                func.sum(case((Transaction.entry_type == "income", Transaction.amount), else_=0)),
                 0,
             ).label("income"),
             func.coalesce(
-                func.sum(case((Transaction.type == "expense", Transaction.amount), else_=0)),
+                func.sum(case((Transaction.entry_type == "expense", Transaction.amount), else_=0)),
                 0,
             ).label("expense"),
         )
         .where(
             Transaction.user_id == user.id,
-            Transaction.date >= start,
-            Transaction.date <= end,
-            Transaction.type.in_(["income", "expense"]),
+            Transaction.transaction_date >= start,
+            Transaction.transaction_date <= end,
+            Transaction.entry_type.in_(["income", "expense"]),
         )
         .group_by("month")
     ).all()
@@ -192,8 +178,8 @@ def account_balances(user: User = Depends(get_current_user), db: Session = Depen
         return {"items": []}
 
     signed = case(
-        (Transaction.type.in_(["income", "transfer_in"]), Transaction.amount),
-        (Transaction.type.in_(["expense", "transfer_out"]), -Transaction.amount),
+        (Transaction.entry_type.in_(["income", "transfer_in"]), Transaction.amount),
+        (Transaction.entry_type.in_(["expense", "transfer_out"]), -Transaction.amount),
         else_=0,
     )
     rows = db.execute(

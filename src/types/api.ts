@@ -7,34 +7,48 @@ export interface Account {
   id: number
   name: string
   type: string
+  subtype?: string | null
   initial_balance: number
+  credit_limit?: number | null
+  bill_date?: number | null
+  due_date?: number | null
   sort_order: number
   is_deleted: boolean
+  created_at?: string
+  updated_at?: string
 }
 
 export interface Category {
   id: number
   name: string
-  type: 'income' | 'expense'
+  nature: 'income' | 'expense'
+  expense_tier?: string | null
   icon?: string | null
   color?: string | null
+  is_stable_income?: boolean
   sort_order: number
   is_system: boolean
   is_deleted: boolean
+  created_at?: string
+  updated_at?: string
 }
 
 export type TransactionType = 'income' | 'expense' | 'transfer_in' | 'transfer_out'
 
 export interface Transaction {
   id: number
-  type: TransactionType
+  entry_type: TransactionType
   amount: number
   category_id?: number | null
   account_id: number
   to_account_id?: number | null
-  date: string
+  transaction_date: string
   note?: string | null
   budget_id?: number | null
+  liability_id?: number | null
+  is_cash_basis?: boolean
+  created_at?: string
+  updated_at?: string
 }
 
 export interface RecurringTemplate {
@@ -71,7 +85,7 @@ export interface Budget {
   start_date?: string | null
   end_date?: string | null
   amount: number
-  category_scope: number[]
+  category_ids: number[]
   is_active: boolean
   period_start?: string | null
   period_end?: string | null
@@ -79,6 +93,8 @@ export interface Budget {
   remaining: number
   percent: number
   is_over: boolean
+  created_at?: string
+  updated_at?: string
 }
 
 export interface StatisticsSummary {

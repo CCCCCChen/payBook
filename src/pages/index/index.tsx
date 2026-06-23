@@ -8,15 +8,13 @@ import ProgressBar from '@/components/ProgressBar'
 import { getAccounts } from '@/services/accounts'
 import { getBudgets } from '@/services/budgets'
 import { getCategories } from '@/services/categories'
-import { getPendingTransactions } from '@/services/recurring'
 import { getTransactions } from '@/services/transactions'
-import type { Account, Budget, Category, PendingTransaction, Transaction } from '@/types/api'
+import type { Account, Budget, Category, Transaction } from '@/types/api'
 import { buildTransactionMaps, getTransactionDesc, getTransactionTitle } from '@/utils/transactionDisplay'
 import styles from './index.module.scss'
 
 function HomePage() {
   const [loading, setLoading] = useState(false)
-  const [pending, setPending] = useState<PendingTransaction[]>([])
   const [txs, setTxs] = useState<Transaction[]>([])
   const [budgets, setBudgets] = useState<Budget[]>([])
   const [accounts, setAccounts] = useState<Account[]>([])
@@ -28,8 +26,8 @@ function HomePage() {
     let income = 0
     let expense = 0
     txs.forEach((t) => {
-      if (t.type === 'income') income += Number(t.amount)
-      if (t.type === 'expense') expense += Number(t.amount)
+      if (t.entry_type === 'income') income += Number(t.amount)
+      if (t.entry_type === 'expense') expense += Number(t.amount)
     })
     return { income, expense }
   }, [txs])
@@ -40,14 +38,7 @@ function HomePage() {
     if (loading) return
     setLoading(true)
     try {
-      const [p, list, b, a, c] = await Promise.all([
-        getPendingTransactions(),
-        getTransactions({ month }),
-        getBudgets(),
-        getAccounts(),
-        getCategories()
-      ])
-      setPending(p.filter((it) => it.status === 'pending'))
+      const [list, b, a, c] = await Promise.all([getTransactions({ month }), getBudgets(), getAccounts(), getCategories()])
       setTxs(list.slice(0, 30))
       setBudgets(b.filter((it) => it.is_active).slice(0, 3))
       setAccounts(a)
@@ -68,10 +59,6 @@ function HomePage() {
   useDidShow(() => {
     refresh()
   })
-
-  const openPending = () => {
-    Taro.navigateTo({ url: '/pages/pendingTransactions/index' })
-  }
 
   const openAdd = () => {
     Taro.showActionSheet({
@@ -97,13 +84,8 @@ function HomePage() {
       <View className={styles.header}>
         <View className={styles.titleRow}>
           <Text className={styles.title}>{month} 概览</Text>
-          <Text className={styles.subTitle}>{loading ? '刷新中…' : '下拉或切页自动刷新'}</Text>
+          <Text className={styles.subTitle}>{loading ? '刷新中…' : '网页端优先，自动刷新本月数据'}</Text>
         </View>
-        {pending.length > 0 && (
-          <View className={styles.pendingBanner} onClick={openPending}>
-            <Text className={styles.pendingText}>你有 {pending.length} 笔待确认账单，点我处理</Text>
-          </View>
-        )}
       </View>
 
       <View className={styles.section}>
@@ -148,9 +130,9 @@ function HomePage() {
       <View className={styles.section}>
         <Text className={styles.sectionTitle}>最近账单</Text>
         <Card>
-          {txs.length === 0 && <Cell title="暂无数据" desc="先去记一笔，或确认周期账单" />}
+          {txs.length === 0 && <Cell title="暂无数据" desc="先去记一笔或创建预算" />}
           {txs.map((t) => {
-            const sign = t.type === 'income' ? '+' : t.type === 'expense' ? '-' : ''
+            const sign = t.entry_type === 'income' ? '+' : t.entry_type === 'expense' ? '-' : ''
             return (
               <Cell
                 key={t.id}

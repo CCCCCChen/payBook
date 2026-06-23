@@ -73,7 +73,7 @@ function TransferPage() {
         from_account_id: fromAccountId,
         to_account_id: toAccountId,
         amount: amt,
-        date,
+        transaction_date: date,
         note: note.trim()
       })
       Taro.showToast({ title: '转账成功', icon: 'success' })

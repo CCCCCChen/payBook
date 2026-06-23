@@ -11,7 +11,31 @@ interface AppProps {
 function App(props: AppProps) {
   const { token, setToken } = useAuthStore()
 
+  const getCurrentRoute = () => {
+    try {
+      const pages = Taro.getCurrentPages()
+      const last = pages[pages.length - 1] as unknown as { route?: string }
+      return last?.route || ''
+    } catch (e) {
+      console.error('[App] getCurrentPages failed', e)
+      return ''
+    }
+  }
+
+  const syncH5AuthRoute = () => {
+    if (process.env.TARO_ENV !== 'h5') return
+    const route = getCurrentRoute()
+    if (!token && route !== 'pages/login/index') {
+      Taro.reLaunch({ url: '/pages/login/index' })
+      return
+    }
+    if (token && route === 'pages/login/index') {
+      Taro.switchTab({ url: '/pages/index/index' })
+    }
+  }
+
   const doLogin = async () => {
+    if (process.env.TARO_ENV !== 'weapp') return
     if (token) return
     try {
       const res = await loginWithWechatCode()
@@ -25,26 +49,16 @@ function App(props: AppProps) {
 
   useEffect(() => {
     doLogin()
+    syncH5AuthRoute()
 
     if (process.env.TARO_ENV === 'weapp') {
-      const getRoute = () => {
-        try {
-          const pages = Taro.getCurrentPages()
-          const last = pages[pages.length - 1] as unknown as { route?: string }
-          return last?.route || 'unknown'
-        } catch (e) {
-          console.error('[Weapp] getCurrentPages failed', e)
-          return 'unknown'
-        }
-      }
-
       Taro.onError((msg) => {
-        console.error('[Weapp] onError', { route: getRoute(), msg })
+        console.error('[Weapp] onError', { route: getCurrentRoute() || 'unknown', msg })
         Taro.showToast({ title: '页面异常，请看控制台日志', icon: 'none' })
       })
 
       Taro.onUnhandledRejection((res) => {
-        console.error('[Weapp] onUnhandledRejection', { route: getRoute(), res })
+        console.error('[Weapp] onUnhandledRejection', { route: getCurrentRoute() || 'unknown', res })
       })
 
       Taro.onPageNotFound((res) => {
@@ -89,10 +103,11 @@ function App(props: AppProps) {
         window.removeEventListener('unhandledrejection', onRejection)
       }
     }
-  }, [])
+  }, [token])
 
   useDidShow(() => {
     doLogin()
+    syncH5AuthRoute()
   })
 
   return props.children

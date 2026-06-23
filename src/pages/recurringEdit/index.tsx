@@ -48,7 +48,7 @@ function RecurringEditPage() {
     try {
       const [a, c] = await Promise.all([getAccounts(), getCategories()])
       setAccounts(a)
-      setCategories(c.filter((it) => it.type === type))
+      setCategories(c.filter((it) => it.nature === type))
       if (!accountId && a.length) setAccountId(a[0].id)
     } catch (e) {
       console.error('[RecurringEdit] load base data failed', e)

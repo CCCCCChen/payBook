@@ -5,7 +5,12 @@ export async function getBudgets(): Promise<Budget[]> {
   return apiRequest<Budget[]>('/budgets')
 }
 
-export async function createBudget(payload: Omit<Budget, 'id' | 'period_start' | 'period_end' | 'spent' | 'remaining' | 'percent' | 'is_over'>): Promise<Budget> {
+export async function createBudget(
+  payload: Omit<
+    Budget,
+    'id' | 'period_start' | 'period_end' | 'spent' | 'remaining' | 'percent' | 'is_over' | 'created_at' | 'updated_at'
+  >
+): Promise<Budget> {
   return apiRequest<Budget>('/budgets', {
     method: 'POST',
     data: payload

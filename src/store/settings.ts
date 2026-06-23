@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist, type PersistStorage } from 'zustand/middleware'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import { taroStorage } from './storage'
 
 interface SettingsState {
@@ -10,12 +10,12 @@ interface SettingsState {
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      baseUrl: 'http://localhost:8000/api/v1',
+      baseUrl: 'http://localhost:8000/api/v2',
       setBaseUrl: (baseUrl) => set({ baseUrl })
     }),
     {
       name: 'paybook_settings',
-      storage: taroStorage as PersistStorage<SettingsState>
+      storage: createJSONStorage(() => taroStorage)
     }
   )
 )

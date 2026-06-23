@@ -37,7 +37,11 @@ def create_account(
         user_id=user.id,
         name=payload.name,
         type=payload.type,
+        subtype=payload.subtype,
         initial_balance=payload.initial_balance,
+        credit_limit=payload.credit_limit,
+        bill_date=payload.bill_date,
+        due_date=payload.due_date,
         sort_order=payload.sort_order,
         updated_at=datetime.utcnow(),
     )

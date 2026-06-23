@@ -26,7 +26,7 @@ export async function transfer(payload: {
   from_account_id: number
   to_account_id: number
   amount: number
-  date: string
+  transaction_date: string
   note?: string
 }): Promise<{ success: boolean }> {
   return apiRequest<{ success: boolean }>('/transactions/transfer', {
