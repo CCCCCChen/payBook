@@ -3,3 +3,6 @@ node_modules
 backend/app/__pycache__
 .env
 backend/app/routers/__pycache__
+.auth/
+dist/
+project.private.config.json

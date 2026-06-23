@@ -2,7 +2,7 @@
   "miniprogramRoot": "dist/",
   "projectname": "taro_template",
   "description": "taro_template",
-  "appid": "wxdba07f6026c75d82",
+  "appid": "touristappid",
   "setting": {
     "urlCheck": true,
     "es6": true,
